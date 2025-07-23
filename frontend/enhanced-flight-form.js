@@ -1,7 +1,14 @@
 // Enhanced Flight Form with Better Error Handling
 // Copy this code into your Lovable project
 
-// Enhanced flight submission function
+/**
+ * Submits flight data to the database for the authenticated user.
+ *
+ * Verifies user authentication, constructs a flight record from the provided form data, and inserts it into the 'flights' table. Throws an error if authentication fails or the database operation is unsuccessful.
+ *
+ * @param {Object} formData - The flight form data, including origin, destination, departure and return dates, and price threshold.
+ * @returns {Object} The inserted flight record.
+ */
 async function submitFlight(formData) {
     try {
         // First, verify authentication
@@ -51,7 +58,11 @@ async function submitFlight(formData) {
     }
 }
 
-// Enhanced form handler
+/**
+ * Initializes the flight form submission handler, managing UI feedback and invoking flight data submission.
+ *
+ * Attaches a submit event listener to the flight form, handles form data extraction, disables the submit button during processing, displays success or error messages, and resets the form upon successful submission.
+ */
 function setupFlightForm() {
     const form = document.getElementById('flight-form');
     if (!form) {
@@ -104,7 +115,9 @@ function setupFlightForm() {
     });
 }
 
-// Debugging functions
+/**
+ * Logs the current authentication session and user details, and tests database connectivity by querying the 'flights' table.
+ */
 async function debugAuth() {
     try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -126,7 +139,11 @@ async function debugAuth() {
     }
 }
 
-// Check if user profile exists
+/**
+ * Checks for the existence of the authenticated user's profile in the 'users' table and logs the result.
+ *
+ * If no user is authenticated, logs a message and exits. Logs the retrieved user profile data or any errors encountered during the process.
+ */
 async function checkUserProfile() {
     try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -145,7 +162,11 @@ async function checkUserProfile() {
     }
 }
 
-// Test flight insertion
+/**
+ * Attempts to insert a test flight record into the 'flights' table for the authenticated user and logs the result.
+ *
+ * If no user is authenticated, logs a message and exits. Logs any errors encountered during the process.
+ */
 async function testFlightInsert() {
     try {
         const { data: { session } } = await supabase.auth.getSession();

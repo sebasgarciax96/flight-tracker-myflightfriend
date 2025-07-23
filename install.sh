@@ -15,19 +15,22 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Function to print colored output
+# print_status prints a status message in green with a checkmark icon.
 print_status() {
     echo -e "${GREEN}✅ $1${NC}"
 }
 
+# print_warning prints a warning message in yellow with a warning icon.
 print_warning() {
     echo -e "${YELLOW}⚠️  $1${NC}"
 }
 
+# print_error prints an error message in red with a cross icon to stderr.
 print_error() {
     echo -e "${RED}❌ $1${NC}"
 }
 
+# print_info prints an informational message in blue with a magnifying glass icon.
 print_info() {
     echo -e "${BLUE}🔍 $1${NC}"
 }

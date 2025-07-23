@@ -38,12 +38,26 @@ class FlightMonitor:
     """Main class for monitoring flight prices"""
     
     def __init__(self, config_file: str = "flight_config.json"):
+        """
+        Initializes the FlightMonitor with configuration and logging.
+        
+        Loads flight monitoring configuration from the specified JSON file and sets up logging for the monitoring process.
+        """
         self.config_file = config_file
         self.config = self.load_config()
         self.setup_logging()
         
     def load_config(self) -> Dict:
-        """Load configuration from JSON file"""
+        """
+        Loads the flight monitoring configuration from the specified JSON file.
+        
+        Returns:
+            Dict: The configuration data as a dictionary.
+        
+        Raises:
+            FileNotFoundError: If the configuration file does not exist.
+            ValueError: If the configuration file contains invalid JSON.
+        """
         try:
             with open(self.config_file, 'r') as f:
                 return json.load(f)
@@ -53,12 +67,16 @@ class FlightMonitor:
             raise ValueError(f"Invalid JSON in configuration file {self.config_file}")
     
     def save_config(self):
-        """Save configuration back to JSON file"""
+        """
+        Save the current configuration to the JSON file specified during initialization.
+        """
         with open(self.config_file, 'w') as f:
             json.dump(self.config, f, indent=2, default=str)
     
     def setup_logging(self):
-        """Setup logging configuration"""
+        """
+        Configures logging to output messages to both a log file and the console using the log level specified in the configuration.
+        """
         log_level = getattr(logging, self.config['notification_settings']['console']['log_level'])
         logging.basicConfig(
             level=log_level,
@@ -71,7 +89,11 @@ class FlightMonitor:
         self.logger = logging.getLogger(__name__)
     
     def get_current_price(self, flight_config: Dict) -> Optional[float]:
-        """Scrape current price for a flight using modern scraper"""
+        """
+        Scrapes and returns the current price for a specified flight using the modern flight scraper.
+        
+        Attempts to retrieve the latest price for the given flight configuration, filtering for Delta and main cabin fares. Handles both round-trip and one-way flights. Returns the price as a float if found, or `None` if unavailable or an error occurs.
+        """
         try:
             self.logger.info(f"Scraping price for flight {flight_config['id']}")
             
@@ -124,7 +146,16 @@ class FlightMonitor:
             return None
     
     def calculate_price_change(self, old_price: float, new_price: float) -> Tuple[float, str]:
-        """Calculate price change percentage and determine alert type"""
+        """
+        Calculate the percentage change between two prices and classify the type of price alert.
+        
+        Parameters:
+            old_price (float): The previous recorded price.
+            new_price (float): The newly observed price.
+        
+        Returns:
+            Tuple[float, str]: A tuple containing the percentage change and the alert type ('decrease', 'increase', 'significant_change', or 'no_change').
+        """
         if old_price == 0:
             return 0.0, 'no_change'
         
@@ -140,7 +171,12 @@ class FlightMonitor:
             return change_percent, 'no_change'
     
     def should_send_alert(self, flight_config: Dict, change_percent: float, alert_type: str) -> bool:
-        """Determine if an alert should be sent based on thresholds"""
+        """
+        Determine whether a price alert should be sent for a flight based on configured notification thresholds and the type of price change.
+        
+        Returns:
+            bool: True if an alert should be sent according to the flight's notification settings and the alert type; otherwise, False.
+        """
         notifications = flight_config.get('notifications', {})
         
         if alert_type == 'decrease':
@@ -155,7 +191,11 @@ class FlightMonitor:
         return False
     
     def send_console_notification(self, alert: PriceAlert):
-        """Send enhanced console notification with verification instructions"""
+        """
+        Displays a detailed console notification for a flight price alert, including flight details, price changes, and verification instructions.
+        
+        The notification highlights the type of price change, provides actionable steps, and includes direct links for verifying current prices on Google Flights and Delta.com. Special attention is drawn to specific Delta flights for user review.
+        """
         if not self.config['notification_settings']['console']['enabled']:
             return
             
@@ -210,7 +250,11 @@ Timestamp: {alert.timestamp.strftime('%Y-%m-%d %H:%M:%S')}
         self.logger.info(f"Enhanced console notification sent for flight {alert.flight_id}")
     
     def send_confirmation_email(self, flight_config: Dict):
-        """Send confirmation email when flight is added for tracking"""
+        """
+        Sends a confirmation email to the user when a flight is added for price tracking.
+        
+        The email includes flight details, monitoring schedule, and notification expectations. Email delivery is skipped if email notifications are disabled in the configuration.
+        """
         email_config = self.config['notification_settings']['email']
         if not email_config['enabled']:
             return
@@ -285,7 +329,11 @@ Timestamp: {alert.timestamp.strftime('%Y-%m-%d %H:%M:%S')}
             self.logger.error(f"Error sending confirmation email: {str(e)}")
     
     def send_email_notification(self, alert: PriceAlert):
-        """Send email notification for price drops"""
+        """
+        Sends an HTML email notification when a tracked Delta flight's price drops below the original purchase price.
+        
+        The email includes detailed flight information, a price comparison, next steps for claiming a credit from Delta, a preformatted message for customer service, and verification links for Google Flights and Delta.com. Email is only sent if email notifications are enabled and the price decrease meets alert criteria.
+        """
         email_config = self.config['notification_settings']['email']
         if not email_config['enabled']:
             return
@@ -429,7 +477,11 @@ Timestamp: {alert.timestamp.strftime('%Y-%m-%d %H:%M:%S')}
             self.logger.info(f"Email notification attempted for flight {alert.flight_id} but failed: {str(e)}")
     
     def _generate_delta_message(self, flight_config: Dict, alert: PriceAlert) -> str:
-        """Generate a dynamic Delta customer service message based on flight details"""
+        """
+        Generate a preformatted message for Delta customer service to request a credit for a flight price drop, using detailed flight and price information.
+        
+        If flight details are incomplete or an error occurs, returns a simplified message with essential information.
+        """
         try:
             import datetime
             
@@ -478,6 +530,17 @@ Timestamp: {alert.timestamp.strftime('%Y-%m-%d %H:%M:%S')}
             
             # Format outbound/return times for Delta format
             def format_time_for_delta(time_str):
+                """
+                Formats a time string to ensure it ends with 'AM' or 'PM' in uppercase, as expected by Delta.
+                
+                If the input contains 'AM' or 'PM' (case-insensitive), it strips any extra spaces and re-appends the suffix in uppercase. Returns the original string if no suffix is found or on error.
+                
+                Parameters:
+                    time_str (str): The time string to format.
+                
+                Returns:
+                    str: The formatted time string with 'AM' or 'PM' in uppercase, or the original string if formatting fails.
+                """
                 try:
                     if 'PM' in time_str.upper():
                         time_part = time_str.upper().replace('PM', '').strip()
@@ -536,7 +599,11 @@ Date: {flight_config['outbound_date']} - {flight_config.get('return_date', 'N/A'
 Please credit the difference to my account. Thanks!"""
     
     def send_post_flight_followup_email(self, flight_config: Dict):
-        """Send follow-up email after flight date has passed"""
+        """
+        Send a follow-up email summarizing flight price monitoring results after the flight date has passed.
+        
+        The email includes a summary of the flight, the lowest price found, any savings achieved, the number of price drops detected, and a call-to-action to track another flight. The message is styled in HTML and only sent if email notifications are enabled in the configuration.
+        """
         email_config = self.config['notification_settings']['email']
         if not email_config['enabled']:
             return
@@ -639,7 +706,9 @@ Please credit the difference to my account. Thanks!"""
             self.logger.error(f"Error sending post-flight follow-up email: {str(e)}")
     
     def check_for_completed_flights(self):
-        """Check for flights that have passed their date and send follow-up emails"""
+        """
+        Checks all tracked flights to identify those whose travel dates have passed, sends post-flight follow-up emails if not already sent, disables further monitoring for completed flights, and updates the configuration accordingly.
+        """
         current_date = datetime.now().date()
         
         for flight_config in self.config['flights']:
@@ -665,7 +734,11 @@ Please credit the difference to my account. Thanks!"""
         self.save_config()
     
     def update_price_history(self, flight_config: Dict, new_price: float):
-        """Update price history for a flight"""
+        """
+        Appends a new price entry with timestamp to a flight's price history and updates monitoring metadata.
+        
+        Maintains only the most recent 100 price points, and updates the current price and last checked time in the flight configuration.
+        """
         if 'price_history' not in flight_config['monitoring']:
             flight_config['monitoring']['price_history'] = []
             
@@ -683,7 +756,17 @@ Please credit the difference to my account. Thanks!"""
         flight_config['monitoring']['last_checked'] = datetime.now().isoformat()
     
     def monitor_flight(self, flight_config: Dict) -> Optional[PriceAlert]:
-        """Monitor a single flight and return alert if needed"""
+        """
+        Monitors a single flight for price changes and determines if an alert should be generated.
+        
+        Checks if monitoring is enabled and if the configured interval has elapsed since the last check. Retrieves the current flight price, calculates the percentage change from the previous price, updates the price history, and evaluates whether an alert should be triggered based on configured thresholds.
+        
+        Parameters:
+            flight_config (Dict): The configuration dictionary for the flight to monitor.
+        
+        Returns:
+            Optional[PriceAlert]: A PriceAlert object if alert conditions are met; otherwise, None.
+        """
         if not flight_config['monitoring']['enabled']:
             return None
             
@@ -722,7 +805,12 @@ Please credit the difference to my account. Thanks!"""
         return None
     
     def monitor_all_flights(self):
-        """Monitor all configured flights"""
+        """
+        Monitors all configured flights, checks for price changes, and sends notifications for detected alerts.
+        
+        Returns:
+            alerts (List[PriceAlert]): List of generated price alerts for flights that met alert conditions during this monitoring cycle.
+        """
         self.logger.info("Starting flight monitoring cycle")
         
         # Check for completed flights first
@@ -749,11 +837,23 @@ Please credit the difference to my account. Thanks!"""
         return alerts
     
     def run_once(self):
-        """Run monitoring cycle once"""
+        """
+        Runs a single flight price monitoring cycle and returns any generated alerts.
+        
+        Returns:
+            List[PriceAlert]: List of price alerts generated during the monitoring cycle.
+        """
         return self.monitor_all_flights()
     
     def run_continuous(self, interval_minutes: int = 60):
-        """Run monitoring continuously"""
+        """
+        Continuously monitors all configured flights at the specified interval.
+        
+        Runs monitoring cycles in an infinite loop, checking all flights and sending notifications as needed. Handles keyboard interrupts to allow graceful shutdown and waits one minute before retrying after errors.
+        
+        Parameters:
+            interval_minutes (int): The interval in minutes between monitoring cycles. Defaults to 60.
+        """
         self.logger.info(f"Starting continuous monitoring every {interval_minutes} minutes")
         
         while True:
@@ -768,7 +868,11 @@ Please credit the difference to my account. Thanks!"""
                 time.sleep(60)  # Wait 1 minute before retrying
 
 def main():
-    """Main function"""
+    """
+    Parses command-line arguments and runs the flight price monitoring process in either one-time or continuous mode.
+    
+    Handles configuration file selection, monitoring mode, and interval settings. Prints a summary of alerts generated or exits with an error message on failure.
+    """
     import argparse
     
     parser = argparse.ArgumentParser(description='Flight Price Monitor')

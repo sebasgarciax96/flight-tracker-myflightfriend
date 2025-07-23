@@ -21,12 +21,21 @@ class ModernFlightScraper:
     """Modern scraper for Google Flights"""
     
     def __init__(self, headless=True, timeout=30):
+        """
+        Initialize the ModernFlightScraper with options for headless browsing and a timeout.
+        
+        Parameters:
+            headless (bool): Whether to run the browser in headless mode. Defaults to True.
+            timeout (int): Maximum time in seconds to wait for page elements. Defaults to 30.
+        """
         self.headless = headless
         self.timeout = timeout
         self.driver = None
         
     def setup_driver(self):
-        """Setup Chrome driver with proper options"""
+        """
+        Initializes and configures the Chrome WebDriver with options for headless operation, custom user-agent, and optimized browser settings for scraping.
+        """
         chromedriver_autoinstaller.install()
         
         chrome_options = Options()
@@ -42,13 +51,26 @@ class ModernFlightScraper:
         self.driver.maximize_window()
         
     def close_driver(self):
-        """Close the driver"""
+        """
+        Closes the Selenium WebDriver instance if it is active and releases associated resources.
+        """
         if self.driver:
             self.driver.quit()
             self.driver = None
     
     def extract_price_from_text(self, text: str, debug: bool = False) -> Optional[float]:
-        """Extract price from text string"""
+        """
+        Extracts the first valid price from a text string and returns it as a float.
+        
+        Searches for price patterns (e.g., "$123", "$1,234.56") in the input text, converts the first match to a float, and filters out values outside the $50–$2000 range as unrealistic. Returns the extracted price or `None` if no valid price is found.
+         
+        Parameters:
+            text (str): The text string to search for a price.
+            debug (bool): If True, prints debug information about the extraction process.
+        
+        Returns:
+            Optional[float]: The extracted price as a float, or None if no valid price is found.
+        """
         # Look for price patterns like $123, $1,234, etc.
         price_pattern = r'\$[\d,]+(?:\.\d{2})?'
         matches = re.findall(price_pattern, text)
@@ -73,7 +95,12 @@ class ModernFlightScraper:
         return None
     
     def wait_for_flights_to_load(self, max_wait=30):
-        """Wait for flight results to load"""
+        """
+        Waits for flight results to appear on the page by checking for specific flight-related elements or keywords.
+        
+        Returns:
+            bool: True if flight results or related content are detected within the wait period, False otherwise.
+        """
         print("⏳ Waiting for flight results to load...")
         
         # Wait for any of these elements to appear
@@ -107,7 +134,11 @@ class ModernFlightScraper:
             return False
     
     def scroll_to_load_more_flights(self):
-        """Scroll down to load more flight options"""
+        """
+        Scrolls the flight results page to load additional flight options.
+        
+        Performs multiple scroll actions and attempts to click buttons labeled with keywords such as "more", "show", or "view" to trigger loading of more flight results.
+        """
         try:
             print("🔄 Scrolling to load more flight options...")
             # Scroll down multiple times to load more results
@@ -156,7 +187,14 @@ class ModernFlightScraper:
             print(f"⚠️ Error scrolling: {e}")
 
     def extract_flight_prices(self) -> List[Dict]:
-        """Extract flight prices from the current page"""
+        """
+        Extracts flight prices from the current page using multiple strategies.
+        
+        Attempts to identify complete flight result containers first, extracting prices and checking for outbound and return flight information to assign priority scores. If no complete containers are found, falls back to several element-based strategies using various CSS selectors and extraction methods to locate price information. Returns a list of dictionaries containing price, text, strategy metadata, and, when available, priority and flight match details.
+        
+        Returns:
+            flights (List[Dict]): A list of dictionaries with extracted price information and associated metadata.
+        """
         flights = []
         
         # Scroll to load more flights first
@@ -312,7 +350,11 @@ class ModernFlightScraper:
         return flights
     
     def apply_delta_filters(self, outbound_time: str = None, return_time: str = None):
-        """Apply Delta-specific filters and time filters to the search"""
+        """
+        Applies Delta airline and Main cabin class filters to the current flight search, and optionally applies time filters for outbound and return flights.
+        
+        If outbound or return times are provided, invokes time-based filtering to further refine the search results.
+        """
         try:
             print("🔍 Applying Delta airline filter...")
             
@@ -367,7 +409,11 @@ class ModernFlightScraper:
             print("   Continuing with all flights...")
     
     def apply_time_filters(self, outbound_time: str = None, return_time: str = None):
-        """Apply time filters to narrow down search to specific time windows"""
+        """
+        Applies time-based filters to restrict flight search results to specific outbound and return time windows.
+        
+        If outbound or return times are provided, calculates a ±2-hour window around each time and applies the corresponding filter to the search results. If time parsing fails or filters cannot be applied, the function continues without raising exceptions.
+        """
         try:
             print("🕐 Applying smart time filters for maximum accuracy...")
             
@@ -393,7 +439,15 @@ class ModernFlightScraper:
             print("   This may reduce accuracy but search will continue...")
     
     def _calculate_time_window(self, target_time: str) -> dict:
-        """Calculate 2-hour time window around target time"""
+        """
+        Calculate a 4-hour time window (±2 hours) around a given target time.
+        
+        Parameters:
+            target_time (str): The target time in 12-hour format (e.g., "1:30 PM").
+        
+        Returns:
+            dict: A dictionary containing the start and end times in both 12-hour and 24-hour formats, or None if parsing fails.
+        """
         try:
             # Parse target time (e.g., "1:30 PM" or "6:25 PM")
             if 'pm' in target_time.lower():
@@ -417,6 +471,15 @@ class ModernFlightScraper:
             
             # Convert back to 12-hour format for display
             def to_12hour(h):
+                """
+                Convert an integer hour in 24-hour format to a 12-hour time string with AM/PM.
+                
+                Parameters:
+                    h (int): Hour in 24-hour format (0–23).
+                
+                Returns:
+                    str: The corresponding time in 12-hour format (e.g., "1:00 PM").
+                """
                 if h == 0:
                     return "12:00 AM"
                 elif h < 12:
@@ -438,7 +501,11 @@ class ModernFlightScraper:
             return None
     
     def _apply_departure_time_filter(self, time_window: dict):
-        """Apply departure time filter on Google Flights"""
+        """
+        Attempts to apply a departure time filter on Google Flights using a specified time window.
+        
+        Searches for departure time filter controls using common selectors, opens the filter if found, and sets the desired time range.
+        """
         try:
             print("🔍 Looking for departure time filter controls...")
             
@@ -475,7 +542,11 @@ class ModernFlightScraper:
             print(f"⚠️ Error applying departure time filter: {e}")
     
     def _apply_return_time_filter(self, time_window: dict):
-        """Apply return time filter on Google Flights"""
+        """
+        Attempts to apply a return time filter on Google Flights using the provided time window.
+        
+        Searches for return time filter controls using common selectors, opens the filter if found, and sets the desired time range. If no suitable controls are found or an error occurs, the function prints a warning and continues.
+        """
         try:
             print("🔍 Looking for return time filter controls...")
             
@@ -509,7 +580,16 @@ class ModernFlightScraper:
             print(f"⚠️ Error applying return time filter: {e}")
     
     def _set_time_range(self, time_window: dict, filter_type: str):
-        """Set the actual time range in the filter"""
+        """
+        Attempts to set the specified time range in the flight search filter controls.
+        
+        Parameters:
+            time_window (dict): Dictionary with 'start' and 'end' keys representing the desired time window.
+            filter_type (str): Indicates whether the filter is for 'departure' or 'return' time.
+        
+        Note:
+            This method currently does not manipulate sliders or input fields directly, but attempts to close any open time filter dialogs after locating relevant controls.
+        """
         try:
             print(f"🔧 Setting {filter_type} time range: {time_window['start']} - {time_window['end']}")
             
@@ -548,7 +628,11 @@ class ModernFlightScraper:
             print(f"⚠️ Error setting time range for {filter_type}: {e}")
 
     def try_find_specific_times(self, outbound_time: str = None, return_time: str = None):
-        """Try to find and select specific flight times"""
+        """
+        Attempts to locate and select flight elements matching specific outbound or return times on the current page.
+        
+        If matching elements are found, clicks the first visible one to refine flight results. Prints status messages indicating progress or failure.
+        """
         try:
             print(f"🕐 Looking for specific flight times...")
             if outbound_time:
@@ -590,7 +674,12 @@ class ModernFlightScraper:
 
     def try_url_for_flights(self, url: str, flight_numbers: List[str] = None, 
                            outbound_time: str = None, return_time: str = None) -> bool:
-        """Try a specific URL and see if we can find the target flights"""
+        """
+                           Attempts to load a given flight search URL and locate target flights by applying filters and searching for specific flight numbers or times.
+                           
+                           Returns:
+                               bool: True if the target flights are found on the page, otherwise False.
+                           """
         try:
             self.driver.get(url)
             time.sleep(5)  # Give more time for complex sites
@@ -619,7 +708,19 @@ class ModernFlightScraper:
 
     def extract_delta_flight_price(self, flight_numbers: List[str] = None, 
                                  outbound_time: str = None, return_time: str = None) -> Optional[float]:
-        """Extract specific flight price from Delta.com"""
+        """
+                                 Extracts the price of specific Delta flights from Delta.com by searching for flight containers that match given flight numbers and/or outbound and return times.
+                                 
+                                 Searches multiple possible flight container selectors, matches flight numbers and times using flexible patterns, and assigns priority scores to each match. Returns the price of the highest-priority matching flight, or `None` if no suitable match is found.
+                                 
+                                 Parameters:
+                                     flight_numbers (List[str], optional): List of flight numbers to match.
+                                     outbound_time (str, optional): Outbound flight time to match (e.g., "1:30 PM").
+                                     return_time (str, optional): Return flight time to match.
+                                 
+                                 Returns:
+                                     Optional[float]: The price of the best-matching Delta flight, or `None` if no match is found.
+                                 """
         try:
             print("🔵 On Delta.com - looking for specific flights and prices")
             
@@ -755,7 +856,17 @@ class ModernFlightScraper:
 
     def search_for_specific_flights(self, flight_numbers: List[str] = None, 
                                   outbound_time: str = None, return_time: str = None) -> bool:
-        """Search for specific flights on the current page"""
+        """
+                                  Searches the current page for flight elements matching specific flight numbers or times and attempts to select them.
+                                  
+                                  Parameters:
+                                  	flight_numbers (List[str], optional): List of flight numbers to match.
+                                  	outbound_time (str, optional): Outbound flight time to match.
+                                  	return_time (str, optional): Return flight time to match.
+                                  
+                                  Returns:
+                                  	bool: True if a matching flight element is found and selected; False otherwise.
+                                  """
         try:
             # Look for flight cards or elements that might contain our specific flights
             flight_elements = self.driver.find_elements(By.CSS_SELECTOR, 
@@ -812,7 +923,19 @@ class ModernFlightScraper:
 
     def aggressive_flight_search(self, flight_numbers: List[str] = None, 
                                outbound_time: str = None, return_time: str = None) -> Optional[float]:
-        """Aggressively search for specific flights using multiple strategies"""
+        """
+                               Performs an aggressive multi-strategy search to locate and extract the price of specific flights.
+                               
+                               This method combines several tactics to maximize the chance of finding target flights, including clicking "Show more flights" buttons, selecting specific outbound or return times, inputting flight numbers, extensive scrolling to load additional results, and interacting with time selection elements. After each action, it extracts and filters flights, returning the price of a high-priority match if found.
+                               
+                               Parameters:
+                               	flight_numbers (List[str], optional): List of specific flight numbers to search for.
+                               	outbound_time (str, optional): Desired outbound departure time (e.g., "1:30 PM").
+                               	return_time (str, optional): Desired return departure time.
+                               
+                               Returns:
+                               	float or None: The price of a high-priority matching flight if found; otherwise, None.
+                               """
         try:
             print("🚀 Starting aggressive flight search...")
             
@@ -872,7 +995,11 @@ class ModernFlightScraper:
             return None
 
     def click_show_more_flights(self):
-        """Click any 'Show more' or similar buttons to expand flight results"""
+        """
+        Attempts to click any button labeled with phrases like 'Show more' to load additional flight results.
+        
+        Searches for visible buttons with common 'show more' text variants and clicks the first one found to expand the list of flights.
+        """
         try:
             button_texts = ['more flights', 'show more', 'view more', 'see more', 'load more', 'more options']
             
@@ -892,7 +1019,13 @@ class ModernFlightScraper:
             print(f"⚠️ Error clicking show more buttons: {e}")
 
     def try_select_specific_times(self, outbound_time: str = None, return_time: str = None):
-        """Try to select specific departure and return times"""
+        """
+        Attempts to select specific outbound or return flight times on the current page by clicking elements matching time variants.
+        
+        Parameters:
+        	outbound_time (str, optional): The desired outbound departure time to select, in a recognizable time format.
+        	return_time (str, optional): The desired return departure time to select, in a recognizable time format.
+        """
         try:
             if outbound_time:
                 print(f"🕐 Trying to select outbound time: {outbound_time}")
@@ -922,7 +1055,12 @@ class ModernFlightScraper:
             print(f"⚠️ Error selecting times: {e}")
 
     def try_input_flight_numbers(self, flight_numbers: List[str]):
-        """Try to input specific flight numbers into search fields"""
+        """
+        Attempts to enter specific flight numbers into relevant input fields on the current page to refine flight search results.
+        
+        Parameters:
+        	flight_numbers (List[str]): List of flight numbers to input for targeted search.
+        """
         try:
             print(f"🎯 Trying to input flight numbers: {flight_numbers}")
             
@@ -958,12 +1096,32 @@ class ModernFlightScraper:
     def generate_verification_urls(self, origin: str, destination: str, outbound_date: str, 
                                  return_date: str = None, outbound_time: str = None, 
                                  return_time: str = None, flight_numbers: List[str] = None) -> List[str]:
-        """Generate URLs for manual verification of specific flights"""
+        """
+                                 Generate Google Flights and Delta.com URLs for manual verification of flight searches based on the provided route, dates, and optional flight details.
+                                 
+                                 Parameters:
+                                 	origin (str): The origin airport code.
+                                 	destination (str): The destination airport code.
+                                 	outbound_date (str): The outbound flight date in YYYY-MM-DD format.
+                                 	return_date (str, optional): The return flight date in YYYY-MM-DD format for round trips.
+                                 	outbound_time (str, optional): The desired outbound departure time.
+                                 	return_time (str, optional): The desired return departure time.
+                                 	flight_numbers (List[str], optional): Specific flight numbers to include in the search.
+                                 
+                                 Returns:
+                                 	List[str]: A list containing Google Flights and Delta.com URLs for manual verification.
+                                 """
         urls = []
         
         try:
             # Convert date format to YYYY-MM-DD if needed
             def format_date(date_str):
+                """
+                Format a date string to 'YYYY-MM-DD' if already in that format, otherwise return the input unchanged.
+                
+                Returns:
+                    str or None: The formatted date string, or None if input is empty.
+                """
                 if not date_str:
                     return None
                 # If already in YYYY-MM-DD format, return as-is
@@ -1003,7 +1161,11 @@ class ModernFlightScraper:
             return []
 
     def save_verification_urls(self, urls: List[str]):
-        """Save verification URLs to a file for easy access"""
+        """
+        Save a list of verification URLs to a text file for manual flight price checking.
+        
+        The URLs are written to 'verification_urls.txt' with a header, numbered list, and timestamp.
+        """
         try:
             with open('verification_urls.txt', 'w') as f:
                 f.write("🔗 Flight Verification URLs\n")
@@ -1022,7 +1184,20 @@ class ModernFlightScraper:
 
     def filter_delta_flights(self, flights: List[Dict], specific_flight_numbers: List[str] = None, 
                            outbound_time: str = None, return_time: str = None) -> List[Dict]:
-        """Filter flights to only include Delta flights, optionally matching specific flight numbers and times"""
+        """
+                           Filter a list of flights to include only Delta flights, prioritizing those that match specific flight numbers and/or outbound and return times.
+                           
+                           Flights are assigned a priority score based on the number of matching criteria (flight numbers, outbound time, return time). The returned list is sorted by priority, with the best matches first. If no Delta flights are found, the original list is returned.
+                           
+                           Parameters:
+                           	flights (List[Dict]): List of flight dictionaries to filter.
+                           	specific_flight_numbers (List[str], optional): Flight numbers to match for higher priority.
+                           	outbound_time (str, optional): Outbound flight time to match for higher priority.
+                           	return_time (str, optional): Return flight time to match for higher priority.
+                           
+                           Returns:
+                           	List[Dict]: Filtered and prioritized list of Delta flight dictionaries.
+                           """
         delta_flights = []
         
         print(f"🔍 Filtering {len(flights)} flights for Delta...")
@@ -1154,7 +1329,15 @@ class ModernFlightScraper:
         return delta_flights
 
     def _get_time_variants(self, time_str: str) -> List[str]:
-        """Get various time format variants for matching"""
+        """
+        Generate multiple string variants of a given time for flexible matching in different formats.
+        
+        Parameters:
+            time_str (str): The time string to generate variants for (e.g., "1:30 PM").
+        
+        Returns:
+            List[str]: A list of time string variants in various 12-hour and 24-hour formats, with and without spaces, and in different cases.
+        """
         if not time_str:
             return []
         
@@ -1216,7 +1399,25 @@ class ModernFlightScraper:
                           outbound_time: str = None, return_time: str = None,
                           flight_numbers: List[str] = None,
                           filter_delta: bool = True, filter_main_cabin: bool = True) -> Optional[float]:
-        """Scrape flight price for given route and dates with Delta filtering"""
+        """
+                          Scrapes the price of a flight for the specified route, dates, and criteria, prioritizing Delta flights and specific flight numbers and times.
+                          
+                          Attempts to find exact flight matches on Delta.com if flight numbers are provided, falling back to Google Flights if necessary. Applies airline and cabin class filters, uses smart time filtering, and generates verification URLs for manual checking. Extracts and filters flight results, ranks matches by priority and price, and returns the price of the best-matching flight, or `None` if no suitable match is found.
+                          
+                          Parameters:
+                              origin (str): The IATA code of the departure airport.
+                              destination (str): The IATA code of the arrival airport.
+                              outbound_date (str): The outbound flight date in YYYY-MM-DD format.
+                              return_date (str, optional): The return flight date in YYYY-MM-DD format for round-trip searches.
+                              outbound_time (str, optional): The desired outbound departure time (e.g., "1:30 PM").
+                              return_time (str, optional): The desired return departure time (e.g., "6:25 PM").
+                              flight_numbers (List[str], optional): Specific flight numbers to match.
+                              filter_delta (bool, optional): Whether to filter results for Delta flights only. Defaults to True.
+                              filter_main_cabin (bool, optional): Whether to filter for Main Cabin fares. Defaults to True.
+                          
+                          Returns:
+                              Optional[float]: The price of the best-matching flight, or `None` if no suitable match is found.
+                          """
         
         if not self.driver:
             self.setup_driver()
@@ -1388,7 +1589,11 @@ class ModernFlightScraper:
             return None
 
 def test_modern_scraper():
-    """Test the modern scraper"""
+    """
+    Demonstrates and tests the ModernFlightScraper by attempting to scrape a round-trip flight price from SLC to DEN on specified dates.
+    
+    Prints the result of the scrape and ensures the WebDriver is properly closed after execution.
+    """
     print("🧪 Testing modern scraper...")
     
     scraper = ModernFlightScraper(headless=True)
