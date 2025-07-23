@@ -1,0 +1,104 @@
+# CodeRabbit Configuration for Flight Tracker Website
+# This file configures CodeRabbit to provide comprehensive reviews
+
+reviews:
+  # Enable automatic reviews on all PRs
+  auto_review: true
+  
+  # Request detailed security analysis
+  request_changes_workflow: true
+  
+  # Focus areas for review
+  focus_areas:
+    - security
+    - performance  
+    - maintainability
+    - best_practices
+    - documentation
+
+# File patterns to include in reviews
+include_patterns:
+  - "**/*.py"      # Python backend files
+  - "**/*.js"      # JavaScript frontend files  
+  - "**/*.html"    # HTML templates
+  - "**/*.css"     # Styling files
+  - "**/*.sql"     # Database files
+  - "**/*.md"      # Documentation
+  - "**/*.json"    # Configuration files
+  - "**/*.yaml"    # Config files
+  - "**/*.yml"     # Config files
+
+# Exclude generated or vendor files
+exclude_patterns:
+  - "**/node_modules/**"
+  - "**/__pycache__/**"
+  - "**/*.pyc"
+  - "**/*.log"
+  - "**/dist/**"
+  - "**/build/**"
+  - "**/.git/**"
+  - "**/google_flight_analysis.egg-info/**"
+
+# Specific review guidelines
+review_guidelines:
+  # Security checks
+  security:
+    - "Check for SQL injection vulnerabilities"
+    - "Validate authentication and authorization flows"
+    - "Review email security and validation"
+    - "Check for exposed secrets or credentials"
+    - "Validate input sanitization"
+    
+  # Performance checks  
+  performance:
+    - "Review database query efficiency"
+    - "Check for memory leaks in web scraping"
+    - "Validate caching strategies"
+    - "Review API response times"
+    
+  # Code quality
+  quality:
+    - "Check error handling completeness"
+    - "Review code organization and structure"
+    - "Validate logging and debugging"
+    - "Check for code duplication"
+    
+  # Architecture
+  architecture:
+    - "Review API design patterns"
+    - "Check separation of concerns"
+    - "Validate configuration management"
+    - "Review frontend/backend integration"
+
+# Custom instructions for this project
+custom_instructions: |
+  This is a flight price monitoring system with the following key components:
+  
+  1. **Backend API (api_server.py)**: Flask REST API for flight management
+  2. **Price Monitoring (flight_monitor.py)**: Core scraping and monitoring logic  
+  3. **Web Scraper (modern_scraper.py)**: Selenium-based Google Flights scraping
+  4. **Frontend (frontend/)**: HTML/CSS/JS interface for user interaction
+  5. **Database Integration**: Supabase with RLS policies
+  6. **Email System**: SMTP notifications with HTML templates
+  
+  Please focus your review on:
+  - **Security**: Authentication flows, input validation, RLS policies
+  - **Reliability**: Error handling, retry logic, monitoring resilience  
+  - **Performance**: Scraping efficiency, API response times, database queries
+  - **Maintainability**: Code organization, documentation, configuration
+  - **Production Readiness**: Deployment, monitoring, logging
+  
+  This system handles real user data and financial information (flight prices), 
+  so security and reliability are critical priorities.
+
+# Language-specific configurations
+language_settings:
+  python:
+    style_guide: "pep8"
+    security_checks: true
+    performance_checks: true
+    
+  javascript:
+    style_guide: "standard"
+    security_checks: true
+    async_checks: true
