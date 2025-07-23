@@ -14,11 +14,21 @@ class FlightManager:
     """Easy flight management interface"""
     
     def __init__(self, config_file: str = "flight_config.json"):
+        """
+        Initialize the FlightManager with a configuration file.
+        
+        Loads the flight monitoring configuration from the specified JSON file, or creates a default configuration if the file does not exist or is invalid.
+        """
         self.config_file = config_file
         self.config = self.load_or_create_config()
     
     def load_or_create_config(self) -> Dict:
-        """Load existing config or create new one"""
+        """
+        Load the flight monitoring configuration from a JSON file, or create a default configuration if the file is missing or invalid.
+        
+        Returns:
+            config (Dict): The loaded or newly created configuration dictionary containing flights, notification settings, and scraping settings.
+        """
         if os.path.exists(self.config_file):
             try:
                 with open(self.config_file, 'r') as f:
@@ -52,7 +62,9 @@ class FlightManager:
         }
     
     def save_config(self):
-        """Save configuration to file"""
+        """
+        Save the current configuration dictionary to the JSON configuration file.
+        """
         with open(self.config_file, 'w') as f:
             json.dump(self.config, f, indent=2, default=str)
     
@@ -69,7 +81,28 @@ class FlightManager:
                    flight_numbers: List[str] = None,
                    monitoring_enabled: bool = True,
                    frequency_hours: int = 6) -> str:
-        """Add a new flight to monitor"""
+        """
+                   Adds a new flight to the monitoring configuration and returns its unique ID.
+                   
+                   If a description is not provided, one is generated based on the route and dates. The flight is initialized with default notification and monitoring settings, appended to the configuration, and saved to the JSON file. Attempts to send a confirmation email via the external flight monitor; failure to send the email does not affect flight creation.
+                   
+                   Parameters:
+                       origin (str): Departure airport code.
+                       destination (str): Arrival airport code.
+                       outbound_date (str): Outbound flight date in YYYY-MM-DD format.
+                       return_date (str, optional): Return flight date in YYYY-MM-DD format for round trips.
+                       outbound_time (str, optional): Outbound flight time.
+                       return_time (str, optional): Return flight time.
+                       original_price (float, optional): Initial price to monitor.
+                       description (str, optional): Custom description for the flight.
+                       airline (str, optional): Airline name.
+                       flight_numbers (List[str], optional): List of flight numbers.
+                       monitoring_enabled (bool, optional): Whether monitoring is enabled for this flight. Defaults to True.
+                       frequency_hours (int, optional): Monitoring frequency in hours. Defaults to 6.
+                   
+                   Returns:
+                       str: The unique ID assigned to the newly added flight.
+                   """
         
         # Generate unique ID
         flight_id = f"flight_{uuid.uuid4().hex[:8]}"
@@ -144,7 +177,15 @@ class FlightManager:
         return flight_id
     
     def remove_flight(self, flight_id: str) -> bool:
-        """Remove a flight from monitoring"""
+        """
+        Removes a flight from the monitoring configuration by its unique ID.
+        
+        Parameters:
+            flight_id (str): The unique identifier of the flight to remove.
+        
+        Returns:
+            bool: True if a flight was removed; False if no matching flight was found.
+        """
         original_count = len(self.config["flights"])
         self.config["flights"] = [f for f in self.config["flights"] if f["id"] != flight_id]
         
@@ -154,15 +195,29 @@ class FlightManager:
         return False
     
     def list_flights(self) -> List[Dict]:
-        """List all flights"""
+        """
+        Return the list of all flights currently stored in the configuration.
+        
+        Returns:
+            List[Dict]: A list of flight dictionaries representing each configured flight.
+        """
         return self.config["flights"]
     
     def get_flight(self, flight_id: str) -> Optional[Dict]:
-        """Get a specific flight"""
+        """
+        Retrieve a flight dictionary by its unique ID.
+        
+        Returns:
+            The flight dictionary if found, or None if no flight with the given ID exists.
+        """
         return next((f for f in self.config["flights"] if f["id"] == flight_id), None)
     
     def update_flight(self, flight_id: str, **kwargs) -> bool:
-        """Update flight properties"""
+        """
+        Update specified properties of a flight by its ID.
+        
+        Only fields in the allowed set ('description', 'original_price', 'current_price', 'airline', 'flight_numbers', 'monitoring', 'notifications') can be updated. Returns True if the flight was found and updated, otherwise False.
+        """
         flight = self.get_flight(flight_id)
         if not flight:
             return False
@@ -181,7 +236,15 @@ class FlightManager:
         return True
     
     def enable_monitoring(self, flight_id: str) -> bool:
-        """Enable monitoring for a flight"""
+        """
+        Enables monitoring for the specified flight.
+        
+        Parameters:
+        	flight_id (str): The unique identifier of the flight to enable monitoring for.
+        
+        Returns:
+        	bool: True if the flight was found and monitoring was enabled; False otherwise.
+        """
         flight = self.get_flight(flight_id)
         if flight:
             flight["monitoring"]["enabled"] = True
@@ -190,7 +253,15 @@ class FlightManager:
         return False
     
     def disable_monitoring(self, flight_id: str) -> bool:
-        """Disable monitoring for a flight"""
+        """
+        Disables monitoring for the specified flight.
+        
+        Parameters:
+        	flight_id (str): The unique identifier of the flight to disable monitoring for.
+        
+        Returns:
+        	bool: True if the flight was found and monitoring was disabled; False otherwise.
+        """
         flight = self.get_flight(flight_id)
         if flight:
             flight["monitoring"]["enabled"] = False
@@ -199,11 +270,20 @@ class FlightManager:
         return False
     
     def get_active_flights(self) -> List[Dict]:
-        """Get all flights with monitoring enabled"""
+        """
+        Return a list of flights that have monitoring enabled.
+        
+        Returns:
+            List[Dict]: A list of flight dictionaries where monitoring is currently active.
+        """
         return [f for f in self.config["flights"] if f["monitoring"]["enabled"]]
     
     def print_flight_summary(self):
-        """Print a summary of all flights"""
+        """
+        Prints a formatted summary of all configured flights, including route, dates, prices, monitoring status, last checked time, and price history count.
+        
+        If no flights are configured, displays instructions for adding a new flight.
+        """
         flights = self.list_flights()
         
         if not flights:
@@ -240,7 +320,12 @@ class FlightManager:
                 print(f"   Price History: {len(price_history)} data points")
 
 def interactive_add_flight():
-    """Interactive flight addition"""
+    """
+    Interactively prompts the user for flight details and adds a new flight to the monitoring configuration.
+    
+    Returns:
+        flight_id (str): The unique identifier of the newly added flight.
+    """
     print("✈️  Add New Flight to Monitor")
     print("=" * 30)
     
@@ -284,7 +369,11 @@ def interactive_add_flight():
     return flight_id
 
 def main():
-    """Main CLI interface"""
+    """
+    Runs the command-line interface for managing monitored flights.
+    
+    Parses user commands and arguments to add, remove, list, enable, or disable flight monitoring, or to launch an interactive flight addition prompt. Provides usage instructions and feedback for each action.
+    """
     import argparse
     
     parser = argparse.ArgumentParser(description='Flight Manager - Manage monitored flights')

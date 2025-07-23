@@ -12,7 +12,9 @@ from pathlib import Path
 from flight_manager import FlightManager
 
 def print_banner():
-    """Print welcome banner"""
+    """
+    Display a welcome banner and introductory message for the Flight Price Monitor setup wizard.
+    """
     print("✈️" * 30)
     print("   FLIGHT PRICE MONITOR SETUP")
     print("✈️" * 30)
@@ -22,7 +24,12 @@ def print_banner():
     print()
 
 def check_requirements():
-    """Check if all requirements are met"""
+    """
+    Checks system prerequisites for the Flight Price Monitor setup, including Python version, Google Chrome installation, and required Python packages. Installs missing packages if necessary.
+    
+    Returns:
+        bool: True if all requirements are met and packages are installed successfully; False otherwise.
+    """
     print("🔍 Checking Requirements...")
     
     # Check Python
@@ -71,7 +78,14 @@ def check_requirements():
     return True
 
 def setup_first_flight():
-    """Set up the first flight to monitor"""
+    """
+    Interactively prompts the user to enter details for their first flight to monitor and adds it to the flight manager.
+    
+    Prompts for origin and destination airport codes, departure and optional return dates, and optional description, airline, and original price. Validates input formats and handles missing or invalid optional fields. Adds the flight to the system and displays confirmation.
+    
+    Returns:
+        flight_id (str): The unique identifier of the newly added flight.
+    """
     print("\n🛫 Let's add your first flight to monitor!")
     print("=" * 40)
     
@@ -148,7 +162,14 @@ def setup_first_flight():
     return flight_id
 
 def setup_monitoring():
-    """Set up monitoring preferences"""
+    """
+    Interactively configures the frequency for flight price monitoring and offers to set up automatic monitoring.
+    
+    Prompts the user to select or enter a custom interval (in hours) for checking flight prices, validates input, and optionally runs an external script to enable automatic monitoring. Returns the chosen monitoring frequency in hours.
+    
+    Returns:
+        frequency (int): The interval in hours between price checks.
+    """
     print("\n⚙️  Monitoring Setup")
     print("=" * 20)
     
@@ -205,7 +226,13 @@ def setup_monitoring():
     return frequency
 
 def setup_notifications():
-    """Set up notification preferences"""
+    """
+    Interactively configures notification thresholds for price changes and returns the selected decrease and increase percentages.
+    
+    Returns:
+        decrease_threshold (float): The percentage decrease threshold for triggering a notification (e.g., 0.05 for 5%).
+        increase_threshold (float): The percentage increase threshold for triggering a notification (e.g., 0.10 for 10%).
+    """
     print("\n📢 Notification Setup")
     print("=" * 20)
     
@@ -247,7 +274,12 @@ def setup_notifications():
     return decrease_threshold, increase_threshold
 
 def test_setup():
-    """Test the setup by running a price check"""
+    """
+    Prompts the user to optionally run a one-time test of the flight monitor setup and displays the results.
+    
+    Returns:
+        bool: True if the test was initiated, False otherwise.
+    """
     print("\n🧪 Testing Your Setup")
     print("=" * 20)
     
@@ -281,7 +313,9 @@ def test_setup():
     return test_now in ['y', 'yes']
 
 def show_next_steps():
-    """Show what the user can do next"""
+    """
+    Display post-setup instructions and tips for using the flight price monitor, including common commands, documentation references, and configuration guidance.
+    """
     print("\n🎉 Setup Complete!")
     print("=" * 20)
     print("Your flight price monitor is ready to use!")
@@ -305,7 +339,11 @@ def show_next_steps():
     print("   Check flight_monitor.log for monitoring activity.")
 
 def main():
-    """Run the setup wizard"""
+    """
+    Orchestrates the interactive setup wizard for the Flight Price Monitor application.
+    
+    Guides the user through environment checks, flight entry, monitoring preferences, notification thresholds, optional test run, and displays next steps. Exits if requirements are not met.
+    """
     print_banner()
     
     # Check requirements

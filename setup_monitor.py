@@ -11,11 +11,18 @@ import subprocess
 from pathlib import Path
 
 def get_script_dir():
-    """Get the directory where this script is located"""
+    """
+    Return the absolute path to the directory containing this script.
+    """
     return Path(__file__).parent.absolute()
 
 def create_cron_job(interval_minutes=60):
-    """Create a cron job to run the monitor"""
+    """
+    Creates a cron job that periodically runs the flight monitor script at a specified interval.
+    
+    Parameters:
+        interval_minutes (int): The interval in minutes between each execution of the monitor script. Defaults to 60.
+    """
     script_dir = get_script_dir()
     monitor_script = script_dir / "flight_monitor.py"
     
@@ -51,7 +58,11 @@ def create_cron_job(interval_minutes=60):
         print(f"❌ Error creating cron job: {str(e)}")
 
 def remove_cron_job():
-    """Remove the flight monitor cron job"""
+    """
+    Removes the cron job associated with the flight monitor script from the user's crontab.
+    
+    If no relevant cron job is found, the function completes without error.
+    """
     script_dir = get_script_dir()
     monitor_script = script_dir / "flight_monitor.py"
     
@@ -82,7 +93,9 @@ def remove_cron_job():
         print(f"❌ Error removing cron job: {str(e)}")
 
 def test_monitor():
-    """Test the flight monitor"""
+    """
+    Runs the flight monitor script once to verify its functionality, displaying output and reporting success or failure.
+    """
     script_dir = get_script_dir()
     monitor_script = script_dir / "flight_monitor.py"
     
@@ -110,7 +123,9 @@ def test_monitor():
         print(f"❌ Error testing monitor: {str(e)}")
 
 def show_status():
-    """Show current monitoring status"""
+    """
+    Displays the current status of the flight monitor setup, including configuration file presence, monitored flights, cron job activity, and log file existence and size.
+    """
     script_dir = get_script_dir()
     
     print("📊 Flight Monitor Status")
@@ -159,7 +174,11 @@ def show_status():
             print(f"📄 {log_file.name} not found")
 
 def main():
-    """Main setup function"""
+    """
+    Parses command-line arguments and dispatches setup actions for the Flight Price Monitor.
+    
+    Depending on the provided arguments, this function installs or removes the cron job, tests the monitor script, or displays the current setup status. If no recognized arguments are given, it prints usage instructions.
+    """
     import argparse
     
     parser = argparse.ArgumentParser(description='Flight Monitor Setup')

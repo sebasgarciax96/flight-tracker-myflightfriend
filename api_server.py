@@ -28,7 +28,9 @@ flight_monitor = FlightMonitor()
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
-    """Health check endpoint"""
+    """
+    Returns the server health status, including current timestamp and API version.
+    """
     return jsonify({
         'status': 'healthy',
         'timestamp': datetime.now().isoformat(),
@@ -37,7 +39,12 @@ def health_check():
 
 @app.route('/api/flights', methods=['GET'])
 def get_flights():
-    """Get all flights"""
+    """
+    Retrieve a list of all flights managed by the system.
+    
+    Returns:
+        JSON response containing a success flag, the list of flights, and the total count. Returns an error message with HTTP 500 status if retrieval fails.
+    """
     try:
         flights = flight_manager.list_flights()
         return jsonify({
@@ -53,7 +60,11 @@ def get_flights():
 
 @app.route('/api/flights', methods=['POST'])
 def add_flight():
-    """Add a new flight"""
+    """
+    Add a new flight to the system using data provided in the request body.
+    
+    Validates that 'origin', 'destination', and 'outbound_date' are present in the JSON payload. Optional fields such as return date, times, price, description, airline, flight numbers, monitoring status, and frequency can also be included. Returns the created flight's ID and details on success, or an error message if validation fails or an exception occurs.
+    """
     try:
         data = request.get_json()
         
@@ -100,7 +111,11 @@ def add_flight():
 
 @app.route('/api/flights/<flight_id>', methods=['GET'])
 def get_flight(flight_id):
-    """Get a specific flight"""
+    """
+    Retrieve details for a specific flight by its ID.
+    
+    Returns a JSON response containing the flight data if found, or a 404 error if the flight does not exist. On unexpected errors, returns a 500 error with an error message.
+    """
     try:
         flight = flight_manager.get_flight(flight_id)
         if not flight:
@@ -122,7 +137,11 @@ def get_flight(flight_id):
 
 @app.route('/api/flights/<flight_id>', methods=['DELETE'])
 def delete_flight(flight_id):
-    """Delete a flight"""
+    """
+    Deletes a flight by its ID.
+    
+    If the flight does not exist, returns a 404 error response. On successful deletion, returns a confirmation message. Handles unexpected errors with a 500 error response.
+    """
     try:
         success = flight_manager.remove_flight(flight_id)
         if not success:
@@ -144,7 +163,11 @@ def delete_flight(flight_id):
 
 @app.route('/api/flights/<flight_id>/toggle', methods=['POST'])
 def toggle_flight_monitoring(flight_id):
-    """Enable/disable monitoring for a flight"""
+    """
+    Toggles the monitoring status (enabled/disabled) for a specific flight.
+    
+    If the flight is found, its monitoring status is switched to the opposite state and the new status is returned in the response. Returns a 404 error if the flight does not exist.
+    """
     try:
         flight = flight_manager.get_flight(flight_id)
         if not flight:
@@ -176,7 +199,12 @@ def toggle_flight_monitoring(flight_id):
 
 @app.route('/api/flights/<flight_id>/check', methods=['POST'])
 def check_flight_price(flight_id):
-    """Check current price for a specific flight"""
+    """
+    Checks and returns the current price for a specific flight, including price change percentage, alert type, and potential savings.
+    
+    Returns:
+        A JSON response containing the current price, previous price, price change percent, alert type, and savings if applicable. Returns a 404 error if the flight is not found or a 500 error if the price cannot be retrieved.
+    """
     try:
         flight = flight_manager.get_flight(flight_id)
         if not flight:
@@ -215,7 +243,12 @@ def check_flight_price(flight_id):
 
 @app.route('/api/monitor', methods=['POST'])
 def run_monitor():
-    """Run the flight monitor for all flights"""
+    """
+    Trigger monitoring for all flights and return any generated alerts.
+    
+    Returns:
+        JSON response containing a list of alerts generated during the monitoring process, including flight ID, old and new prices, price change percentage, alert type, and timestamp. On error, returns a JSON response with an error message and HTTP 500 status.
+    """
     try:
         alerts = flight_monitor.monitor_all_flights()
         
@@ -242,7 +275,12 @@ def run_monitor():
 
 @app.route('/api/monitor/status', methods=['GET'])
 def get_monitor_status():
-    """Get monitoring status"""
+    """
+    Retrieve a summary of the current monitoring status for all flights.
+    
+    Returns:
+        JSON response containing the total number of flights, counts of active and inactive flights, and a list of flight details including monitoring status, last checked time, and price information.
+    """
     try:
         flights = flight_manager.list_flights()
         active_flights = [f for f in flights if f['monitoring']['enabled']]
@@ -271,7 +309,12 @@ def get_monitor_status():
 
 @app.route('/api/flights/<flight_id>/history', methods=['GET'])
 def get_price_history(flight_id):
-    """Get price history for a flight"""
+    """
+    Retrieve the price history for a specific flight by its ID.
+    
+    Returns:
+        A JSON response containing the flight ID, a list of historical prices, and the count of price records. Returns a 404 error if the flight is not found.
+    """
     try:
         flight = flight_manager.get_flight(flight_id)
         if not flight:
@@ -297,17 +340,31 @@ def get_price_history(flight_id):
 
 @app.route('/')
 def serve_frontend():
-    """Serve the frontend"""
+    """
+    Serves the main frontend application page by returning the 'index.html' file from the 'frontend' directory.
+    """
     return send_from_directory('frontend', 'index.html')
 
 @app.route('/frontend/<path:filename>')
 def serve_frontend_files(filename):
-    """Serve frontend files"""
+    """
+    Serve a static file from the 'frontend' directory.
+    
+    Parameters:
+        filename (str): The name of the file to serve.
+    
+    Returns:
+        The requested file as a Flask response object.
+    """
     return send_from_directory('frontend', filename)
 
 @app.route('/api/test', methods=['POST'])
 def test_scraper():
-    """Test the scraper with Delta filtering"""
+    """
+    Tests the flight price scraper for Delta main cabin flights on a specified route and date.
+    
+    Expects a JSON payload with `origin`, `destination`, and `outbound_date`. Returns the found price for a Delta main cabin flight if available, or an error message if no matching flights are found.
+    """
     try:
         data = request.get_json()
         
