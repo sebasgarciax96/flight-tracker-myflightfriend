@@ -1,0 +1,109 @@
+{
+  "flights": [
+    {
+      "id": "flight_3fa4eefe",
+      "description": "SLC to DEN Round Trip (2025-08-04 at 1:30 PM - 2025-08-05 at 6:25 PM)",
+      "type": "round-trip",
+      "origin": "SLC",
+      "destination": "DEN",
+      "outbound_date": "2025-08-04",
+      "original_price": 329,
+      "current_price": 446.0,
+      "notifications": {
+        "email": true,
+        "console": true,
+        "price_decrease_threshold": 0.05,
+        "price_increase_threshold": 0.1
+      },
+      "monitoring": {
+        "enabled": true,
+        "frequency_hours": 6,
+        "last_checked": "2025-07-18T13:31:09.493836",
+        "price_history": [
+          {
+            "price": 225.0,
+            "timestamp": "2025-07-18T13:31:09.493815"
+          }
+        ]
+      },
+      "return_date": "2025-08-05",
+      "outbound_time": "1:30 PM",
+      "return_time": "6:25 PM",
+      "airline": "Delta",
+      "flight_numbers": [
+        "DL1623",
+        "DL2663"
+      ]
+    },
+    {
+      "id": "flight_ab157293",
+      "description": "SLC to SFO Round Trip (2025-10-28 at 8:00 AM - 2025-10-29 at 10:00 AM)",
+      "type": "round-trip",
+      "origin": "SLC",
+      "destination": "SFO",
+      "outbound_date": "2025-10-28",
+      "original_price": 221.5,
+      "current_price": 221.5,
+      "notifications": {
+        "email": true,
+        "console": true,
+        "price_decrease_threshold": 0.05,
+        "price_increase_threshold": 0.1
+      },
+      "monitoring": {
+        "enabled": true,
+        "frequency_hours": 6,
+        "last_checked": null,
+        "price_history": []
+      },
+      "return_date": "2025-10-29",
+      "outbound_time": "8:00 AM",
+      "return_time": "10:00 AM",
+      "airline": "Delta"
+    },
+    {
+      "id": "flight_27bee631",
+      "description": "Spring Break Trip",
+      "type": "round-trip",
+      "origin": "SLC",
+      "destination": "LAX",
+      "outbound_date": "2025-03-15",
+      "original_price": 450,
+      "current_price": 450,
+      "notifications": {
+        "email": true,
+        "console": true,
+        "price_decrease_threshold": 0.05,
+        "price_increase_threshold": 0.1
+      },
+      "monitoring": {
+        "enabled": true,
+        "frequency_hours": 6,
+        "last_checked": null,
+        "price_history": []
+      },
+      "return_date": "2025-03-22",
+      "airline": "Delta"
+    }
+  ],
+  "notification_settings": {
+    "email": {
+      "enabled": true,
+      "smtp_server": "smtp.gmail.com",
+      "smtp_port": 587,
+      "sender_email": "sebas@spread-social.com",
+      "sender_password": "grfc xpgp abme vjyw",
+      "recipient_email": "sebas@spread-social.com"
+    },
+    "console": {
+      "enabled": true,
+      "log_level": "INFO"
+    }
+  },
+  "scraping_settings": {
+    "headless": true,
+    "timeout_seconds": 30,
+    "retry_attempts": 3,
+    "delay_between_requests": 2
+  }
+}

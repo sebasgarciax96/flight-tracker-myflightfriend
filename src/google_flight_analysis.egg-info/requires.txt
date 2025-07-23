@@ -1,0 +1,6 @@
+tqdm
+numpy
+pandas
+selenium
+sqlalchemy
+chromedriver-autoinstaller

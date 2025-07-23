@@ -1,0 +1,9 @@
+🔗 Flight Verification URLs
+==================================================
+
+Use these URLs to manually verify your specific flight prices:
+
+1. https://www.google.com/travel/flights?f=0&gl=us&hl=en&curr=USD&q=SLC%20to%20LAX%202025-03-15%202025-03-22%20Delta
+2. https://www.delta.com/flight-search/book-a-flight?tripType=roundTrip&origin=SLC&destination=LAX&departureDate=2025-03-15&returnDate=2025-03-22&passengers=1
+
+Generated: 2025-07-23 09:12:34

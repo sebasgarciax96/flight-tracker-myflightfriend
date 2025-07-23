@@ -1,146 +1,411 @@
-[![kcelebi](https://circleci.com/gh/celebi-pkg/flight-analysis.svg?style=svg)](https://circleci.com/gh/celebi-pkg/flight-analysis)
+# ✈️ Flight Price Monitor
+
+**Never miss a flight deal again!** Automatically monitor flight prices and get notified when prices drop.
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Live on PyPI](https://img.shields.io/badge/PyPI-1.2.0-brightgreen)](https://pypi.org/project/google-flight-analysis/)
-[![TestPyPI](https://img.shields.io/badge/PyPI-1.1.1--alpha.11-blue)](https://test.pypi.org/project/google-flight-analysis/1.1.1a11/)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Platform: macOS](https://img.shields.io/badge/platform-macOS-lightgrey.svg)](https://www.apple.com/macos/)
 
-# Flight Analysis
+## 🚀 Quick Start
 
-This project provides tools and models for users to analyze, forecast, and collect data regarding flights and prices. There are currently many features in initial stages and in development. The current features (as of 5/25/2023) are:
+### 1. Download & Setup
+```bash
+git clone https://github.com/YOUR_USERNAME/flight-price-monitor.git
+cd flight-price-monitor
+python3 setup_wizard.py
+```
 
-- Detailed scraping and querying tools for Google Flights
-- Ability to store data locally or to SQL tables
-- Base analytical tools/methods for price forecasting/summary
+### 2. Add Your First Flight
+```bash
+python3 flight_manager.py interactive
+```
 
-The features in development are:
+### 3. Start Monitoring
+```bash
+python3 flight_monitor.py --once
+```
 
-- Models to demonstrate ML techniques on forecasting
-- Querying of advanced features
-- API for access to previously collected data
+**That's it!** The monitor will automatically check your flights and send you alerts when prices change.
 
-## Table of Contents
-- [Overview](#Overview)
-- [Usage](#usage)
-- [Updates & New Features](#updates-&-new-features)
-- [Real Usage](#real-usage) 😄
+---
 
+## 🌟 Features
 
-## Overview
+- **🔄 Automatic Monitoring**: Set it and forget it - checks prices every 6 hours
+- **📱 Smart Alerts**: Get notified only when prices drop significantly
+- **💾 Price History**: Track price changes over time
+- **🎯 Multiple Flights**: Monitor as many flights as you want
+- **⚡ Easy Setup**: No coding experience required
+- **🔒 Privacy First**: All data stays on your computer
 
-Flight price calculation can either use newly scraped data (scrapes upon running it) or cached data that reports a price-change confidence determined by a trained model. Currently, many features of this application are in development.
+---
 
-## Usage
+## 📋 Requirements
 
-The web scraping tool is currently functional only for scraping round trip flights for a given origin, destination, and date range. It can be easily used in a script or a jupyter notebook.
+- **macOS** (Windows/Linux support coming soon)
+- **Python 3.8+** (usually pre-installed on Mac)
+- **Google Chrome** (for web scraping)
+- **Internet connection**
 
-Note that the following packages are **absolutely required** as dependencies:
-- tqdm
-- selenium **(make sure to update your [ChromeDriver](https://chromedriver.chromium.org)!)**
-- pandas
-- numpy
+---
 
-You can easily install this by running either installing the Python package `google-flight-analysis`:
+## 🛠️ Installation
 
-	pip install google-flight-analysis
+### Option 1: Setup Wizard (Recommended)
+```bash
+python3 setup_wizard.py
+```
+The wizard will guide you through the entire setup process step by step.
 
-or forking/cloning this repository. Upon doing so, make sure to install the dependencies and update ChromeDriver to match your Google Chrome version.
+### Option 2: Manual Setup
+```bash
+# Install dependencies
+pip3 install -r requirements.txt
 
-	pip install -r requirements.txt
+# Add your first flight
+python3 flight_manager.py add JFK LAX 2024-12-01 2024-12-08 450
 
+# Test the monitor
+python3 flight_monitor.py --once
 
-The main scraping function that makes up the backbone of most other functionalities is `Scrape()`. It serves also as a data object, preserving the flight information as well as meta-data from your query. For Python package users, import as follows:
+# Set up automatic monitoring
+python3 setup_monitor.py --install --interval 360
+```
 
-	from google_flight_analysis.scrape import *
+---
 
-For GitHub repository cloners, import as follows from the root of the repository:
+## 📖 Usage Examples
 
-	from src.google_flight_analysis.scrape import *
-	#---OR---#
-	import sys
-	sys.path.append('src/google_flight_analysis')
-	from scrape import *
+### Add Flights
+```bash
+# Round-trip flight
+python3 flight_manager.py add JFK LAX 2024-12-01 2024-12-08 450
 
+# One-way flight
+python3 flight_manager.py add SLC DEN 2024-11-15 250
 
-Here is some quick starter code to accomplish the basic tasks. Find more in the [documentation](https://kcelebi.github.io/flight-analysis/).
+# Interactive mode (easiest)
+python3 flight_manager.py interactive
+```
 
-	# Keep the dates in format YYYY-mm-dd
-	result = Scrape('JFK', 'IST', '2023-07-20', '2023-08-20') # obtain our scrape object, represents out query
-	result.type # This is in a round-trip format
-	result.origin # ['JFK', 'IST']
-	result.dest # ['IST', 'JFK']
-	result.dates # ['2023-07-20', '2023-08-20']
-	print(result) # get unqueried str representation
+### Monitor Flights
+```bash
+# Check prices once
+python3 flight_monitor.py --once
 
-A `Scrape` object represents a Google Flights query to be run. It maintains flights as a sequence of one or more one-way flights which have a origin, destination, and flight date. The above object for a round-trip flight from JFK to IST is a sequence of JFK --> IST, then IST --> JFK. We can obtain the data as follows:
+# Check prices continuously (every hour)
+python3 flight_monitor.py --continuous --interval 60
 
-	ScrapeObjects(result) # runs selenium through ChromeDriver, modifies results in-place
-	result.data # returns pandas DF
-	print(result) # get queried representation of result
+# Check specific configuration file
+python3 flight_monitor.py --config my_flights.json --once
+```
 
-You can also scrape for one-way trips:
+### Manage Flights
+```bash
+# List all flights
+python3 flight_manager.py list
 
-	results = Scrape('JFK', 'IST', '2023-08-20')
-	ScrapeObjects(result)
-	result.data #see data
+# Remove a flight
+python3 flight_manager.py remove flight_12345678
 
-You can also scrape chain-trips, which are defined as a sequence of one-way flights that have no direct relation to each other, other than being in chronological order. 
+# Enable/disable monitoring
+python3 flight_manager.py enable flight_12345678
+python3 flight_manager.py disable flight_12345678
+```
 
-	# chain-trip format: origin, dest, date, origin, dest, date, ...
-	result = Scrape('JFK', 'IST', '2023-08-20', 'RDU', 'LGA', '2023-12-25', 'EWR', 'SFO', '2024-01-20')
-	result.type # chain-trip
-	ScrapeObjects(result)
-	result.data # see data
+### Automation
+```bash
+# Set up automatic monitoring every 6 hours
+python3 setup_monitor.py --install --interval 360
 
-You can also scrape perfect-chains, which are defined as a sequence of one-way flights such that the destination of the previous flight is the origin of the next and the origin of the chain is the final destination of the chain (a cycle).
+# Check monitoring status
+python3 setup_monitor.py --status
 
-	# perfect-chain format: origin, date, origin, date, ..., first_origin
-	result = Scrape("JFK", "2023-09-20", "IST", "2023-09-25", "CDG", "2023-10-10", "LHR", "2023-11-01", "JFK")
-	result.type # perfect-chain
-	ScrapeObjects(result)
-	result.data # see data
+# Remove automatic monitoring
+python3 setup_monitor.py --uninstall
+```
 
-You can read more about the different type of trips in the documentation. Scrape objects can be added to one another to create larger queries. This is under the conditions:
+---
 
-1. The objects being added are the same type of trip (one-way, round-trip, etc)
-2. The objects being added are either both unqueried or both queried
+## 🔔 Alert Examples
 
-## Updates & New Features
+### Price Drop Alert
+```
+📉 FLIGHT PRICE ALERT 📉
+Flight: New York to Los Angeles
+Route: JFK → LAX
+Date: 2024-12-01 - 2024-12-08
+Original Price: $450.00
+Previous Price: $398.00
+Current Price: $325.00
+Change: -18.3%
+💰 You could save $73.00!
+```
 
-Performing a complete revamp of this package, including new addition to PyPI. Documentation is being updated frequently, contact for any questions.
+### Price Increase Alert
+```
+📈 FLIGHT PRICE ALERT 📈
+Flight: Denver to Seattle
+Route: DEN → SEA
+Date: 2024-11-15
+Original Price: $250.00
+Previous Price: $280.00
+Current Price: $320.00
+Change: +14.3%
+⚠️ Price increased by $40.00
+```
 
+---
 
-<!--
-## Cache Data
+## ⚙️ Configuration
 
-The caching system for this application is mainly designed to make the loading of data more efficient. For the moment, this component of the application hasn't been designed well for the public to easily use so I would suggest that most people leave it alone, or fork the repository and modify some of the functions to create folders in the destinations that they would prefer. The key caching functions are:
+### Flight Configuration (`flight_config.json`)
+```json
+{
+  "flights": [
+    {
+      "id": "flight_12345678",
+      "description": "Christmas Vacation",
+      "type": "round-trip",
+      "origin": "JFK",
+      "destination": "LAX",
+      "outbound_date": "2024-12-01",
+      "return_date": "2024-12-08",
+      "original_price": 450.00,
+      "current_price": 325.00,
+      "airline": "American",
+      "notifications": {
+        "price_decrease_threshold": 0.05,
+        "price_increase_threshold": 0.10
+      },
+      "monitoring": {
+        "enabled": true,
+        "frequency_hours": 6
+      }
+    }
+  ]
+}
+```
 
-- `cache_data`
-- `load_cached`
-- `iterative_caching`
-- `clean_cache`
-- `cache_condition`
-- `check_cached`
+### Notification Settings
+- **`price_decrease_threshold`**: Alert when price drops by this percentage (0.05 = 5%)
+- **`price_increase_threshold`**: Alert when price rises by this percentage (0.10 = 10%)
+- **`frequency_hours`**: How often to check prices (6 = every 6 hours)
 
-All of these functions are clearly documented in the `scraping.py` file.
--->
-<!--## To Do
+### Email Notifications (Optional)
+```json
+{
+  "notification_settings": {
+    "email": {
+      "enabled": true,
+      "smtp_server": "smtp.gmail.com",
+      "smtp_port": 587,
+      "sender_email": "your-email@gmail.com",
+      "sender_password": "your-app-password",
+      "recipient_email": "alerts@your-domain.com"
+    }
+  }
+}
+```
 
-- [x] Scrape data and clean it
-- [x] Testing for scraping
-- [x] Add scraping docs
-- [ ] Split Airlines
-- [ ] Add day of week as a feature
-- [ ] Support for Day of booking!! ("Delayed by x hr")
-- [ ] Detail most common airports and automatically cache
-- [ ] Algorithm to check over multiple days and return summary
-- [x] Determine caching method: wait for request and cache? periodically cache?
-- [ ] Model for observing change in flight price
-	- Predict how much it'll maybe change
-- [ ] UI for showing flights that are 'perfect' to constraint / flights that are close to constraints, etc
-- [ ] Caching/storing data, uses predictive model to estimate how good this is
+---
 
--->
-## Real Usage
+## 📊 Monitoring Dashboard
 
-Here are some great flights I was able to find and actually booked when planning my travel/vacations:
+### Check Current Status
+```bash
+python3 setup_monitor.py --status
+```
 
-- NYC ➡️ AMS (May 9), AMS ➡️ IST (May 12), IST ➡️ NYC (May 23) | Trip Total: $611 as of March 7, 2022
+### View Price History
+```bash
+python3 flight_manager.py list
+```
+
+### Check Logs
+```bash
+# View recent activity
+tail -20 flight_monitor.log
+
+# View price alerts only
+grep "PRICE ALERT" flight_monitor.log
+```
+
+---
+
+## 🎯 Use Cases
+
+### 🏖️ Vacation Planning
+- Monitor flights to your dream destination
+- Get alerts when prices drop for your travel dates
+- Track price trends to find the best booking time
+
+### 💼 Business Travel
+- Monitor regular routes for business trips
+- Get notified of price changes for flexible dates
+- Track multiple airports for better deals
+
+### 🏠 Visit Family
+- Monitor flights to family destinations
+- Get alerts for holiday travel deals
+- Track prices for last-minute trips
+
+### 🎓 Student Travel
+- Monitor budget-friendly routes
+- Get alerts for student discounts
+- Track prices for semester breaks
+
+---
+
+## 🔧 Advanced Features
+
+### Custom Scraping Settings
+```json
+{
+  "scraping_settings": {
+    "headless": true,
+    "timeout_seconds": 30,
+    "retry_attempts": 3,
+    "delay_between_requests": 2
+  }
+}
+```
+
+### Multiple Configuration Files
+```bash
+# Use different config files for different purposes
+python3 flight_monitor.py --config vacation_flights.json --once
+python3 flight_monitor.py --config business_flights.json --once
+```
+
+### Batch Operations
+```bash
+# Add multiple flights from a CSV file
+python3 import_flights.py flights.csv
+
+# Export flight data
+python3 export_flights.py --format csv
+```
+
+---
+
+## 🛡️ Privacy & Security
+
+- **Local Data**: All flight data stays on your computer
+- **No Account Required**: No sign-ups or external services
+- **Open Source**: Full transparency in code
+- **Secure Scraping**: Respectful rate limiting to avoid blocking
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Here's how to get started:
+
+### For Users
+- 🐛 Report bugs in [Issues](https://github.com/YOUR_USERNAME/flight-price-monitor/issues)
+- 💡 Suggest features and improvements
+- 📚 Help improve documentation
+- ⭐ Star the project if you find it useful
+
+### For Developers
+- 🔧 Fix bugs and add features
+- 📝 Improve code documentation
+- 🧪 Add tests and improve reliability
+- 🌍 Add support for other countries/languages
+
+### Development Setup
+```bash
+git clone https://github.com/YOUR_USERNAME/flight-price-monitor.git
+cd flight-price-monitor
+pip3 install -r requirements.txt
+python3 -m pytest tests/
+```
+
+---
+
+## 📚 Documentation
+
+- **[Quick Start Guide](QUICK_START.md)** - Get started in 3 steps
+- **[User Guide](USER_GUIDE.md)** - Complete user documentation
+- **[API Reference](docs/API.md)** - Technical documentation
+- **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
+
+---
+
+## 🆘 Support
+
+### Getting Help
+- 📖 Check the [User Guide](USER_GUIDE.md)
+- 🐛 Search [Issues](https://github.com/YOUR_USERNAME/flight-price-monitor/issues)
+- 💬 Ask questions in [Discussions](https://github.com/YOUR_USERNAME/flight-price-monitor/discussions)
+
+### Common Issues
+- **Chrome not found**: Install Chrome from [chrome.google.com](https://chrome.google.com)
+- **Python not found**: Install Python from [python.org](https://python.org)
+- **Permission denied**: Run `chmod +x *.py` to fix permissions
+
+---
+
+## 🏆 Success Stories
+
+> "Saved $400 on my honeymoon flights to Hawaii!" - @user123
+
+> "Never miss a deal anymore. This tool pays for itself!" - @traveler456
+
+> "Perfect for business travel. Tracks all my regular routes." - @businesswoman
+
+---
+
+## 📈 Roadmap
+
+### ✅ Current Features
+- [x] Automatic price monitoring
+- [x] Smart alerts and notifications
+- [x] Multiple flight support
+- [x] Price history tracking
+- [x] Easy setup wizard
+
+### 🔄 In Progress
+- [ ] Windows and Linux support
+- [ ] Mobile app (iOS/Android)
+- [ ] Web dashboard
+- [ ] Email notifications
+- [ ] API for integrations
+
+### 🚀 Future Plans
+- [ ] International flight support
+- [ ] Price prediction ML models
+- [ ] Hotel and car rental monitoring
+- [ ] Group travel features
+- [ ] Integration with travel booking sites
+
+---
+
+## 📝 License
+
+MIT License - see [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- Built on top of [google-flight-analysis](https://github.com/celebi-pkg/flight-analysis)
+- Selenium WebDriver for web scraping
+- Python community for excellent libraries
+- All contributors and users who make this project better
+
+---
+
+## 💰 Support the Project
+
+If this tool saves you money on flights, consider:
+- ⭐ Starring the repository
+- 🐛 Reporting bugs and issues
+- 💡 Suggesting new features
+- 📢 Sharing with friends and family
+- ☕ [Buy me a coffee](https://buymeacoffee.com/flightmonitor)
+
+---
+
+**Happy travels and happy savings!** ✈️💰

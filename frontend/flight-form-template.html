@@ -1,0 +1,67 @@
+<!-- Enhanced Flight Form Template -->
+<!-- Add these message divs to your flight form in Lovable -->
+
+<div class="form-messages">
+  <!-- Error Message -->
+  <div id="error-message" style="
+    display: none; 
+    color: #dc3545; 
+    background-color: #f8d7da; 
+    border: 1px solid #f5c6cb; 
+    border-radius: 4px; 
+    padding: 12px; 
+    margin: 10px 0; 
+    font-size: 14px;
+  "></div>
+
+  <!-- Success Message -->
+  <div id="success-message" style="
+    display: none; 
+    color: #155724; 
+    background-color: #d4edda; 
+    border: 1px solid #c3e6cb; 
+    border-radius: 4px; 
+    padding: 12px; 
+    margin: 10px 0; 
+    font-size: 14px;
+  "></div>
+</div>
+
+<!-- Your existing flight form should have id="flight-form" -->
+<form id="flight-form">
+  <!-- Your existing form fields -->
+  
+  <!-- Make sure your submit button looks like this: -->
+  <button type="submit" class="submit-btn">Save Flight</button>
+</form>
+
+<!-- CSS for better styling (optional) -->
+<style>
+.form-messages {
+  margin: 20px 0;
+}
+
+#error-message {
+  animation: slideIn 0.3s ease-out;
+}
+
+#success-message {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+</style>

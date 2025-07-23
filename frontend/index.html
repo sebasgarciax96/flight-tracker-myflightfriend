@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Price Monitor - Delta Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+
+        .add-flight-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+        }
+
+        .add-flight-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #5a67d8;
+        }
+
+        .btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+        }
+
+        .btn-danger {
+            background: #e53e3e;
+        }
+
+        .btn-danger:hover {
+            background: #c53030;
+        }
+
+        .btn-secondary {
+            background: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #2d3748;
+        }
+
+        .flights-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .flights-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .flight-card {
+            background: #f8f9fa;
+            border: 1px solid #e1e5e9;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .flight-card:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .flight-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .flight-route {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .flight-dates {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .flight-times {
+            color: #667eea;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .price-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .price-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .price-label {
+            font-size: 0.85rem;
+            color: #666;
+            font-weight: 600;
+            min-width: 120px;
+        }
+
+        .price-original {
+            font-size: 1rem;
+            color: #e53e3e;
+            font-weight: 600;
+        }
+
+        .price-current {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #38a169;
+        }
+
+        .price-savings {
+            background: #c6f6d5;
+            color: #22543d;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .flight-numbers {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .flight-number {
+            background: #667eea;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .price-status {
+            background: #f0f4f8;
+            border-left: 4px solid #667eea;
+            padding: 12px;
+            margin: 12px 0;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .price-status.good-deal {
+            background: #c6f6d5;
+            border-left-color: #38a169;
+            color: #22543d;
+        }
+
+        .price-status.bad-deal {
+            background: #fed7d7;
+            border-left-color: #e53e3e;
+            color: #742a2a;
+        }
+
+        .price-status.neutral {
+            background: #fef5e7;
+            border-left-color: #d69e2e;
+            color: #744210;
+        }
+
+        .flight-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .alert-success {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+
+        .alert-error {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 1px solid #feb2b2;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✈️ Delta Flight Price Monitor</h1>
+            <p>Track Delta Main Cabin flights and get notified when prices drop</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <h3 id="totalFlights">0</h3>
+                <p>Total Flights</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="totalSavings">$0</h3>
+                <p>Total Savings</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="activeFlights">0</h3>
+                <p>Active Monitors</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="lastUpdate">Never</h3>
+                <p>Last Update</p>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="add-flight-section">
+                <h2>Add New Flight</h2>
+                <form id="addFlightForm">
+                    <div class="form-group">
+                        <label for="origin">From (Origin)</label>
+                        <input type="text" id="origin" placeholder="e.g., SLC" maxlength="3" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="destination">To (Destination)</label>
+                        <input type="text" id="destination" placeholder="e.g., DEN" maxlength="3" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="outboundDate">Departure Date</label>
+                            <input type="date" id="outboundDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="outboundTime">Departure Time</label>
+                            <input type="time" id="outboundTime">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="returnDate">Return Date</label>
+                            <input type="date" id="returnDate">
+                        </div>
+                        <div class="form-group">
+                            <label for="returnTime">Return Time</label>
+                            <input type="time" id="returnTime">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="originalPrice">Original Price ($)</label>
+                        <input type="number" id="originalPrice" placeholder="350" min="0" step="0.01">
+                    </div>
+                    
+                    <button type="submit" class="btn">Add Flight</button>
+                </form>
+            </div>
+
+            <div class="flights-section">
+                <h2>Your Flights</h2>
+                <div id="flightsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5001';
+        let flights = [];
+        let isLoading = false;
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFlights();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            document.getElementById('addFlightForm').addEventListener('submit', handleAddFlight);
+        }
+
+        async function loadFlights() {
+            try {
+                showLoading();
+                const response = await fetch(`${API_BASE_URL}/api/flights`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    flights = data.flights;
+                    renderFlights();
+                    updateStats();
+                } else {
+                    showAlert('Error loading flights', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading flights:', error);
+                showAlert('Failed to connect to server. Make sure it\'s running.', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function handleAddFlight(e) {
+            e.preventDefault();
+            
+            if (isLoading) return;
+            
+            const formData = new FormData(e.target);
+            const flightData = {
+                origin: document.getElementById('origin').value.toUpperCase(),
+                destination: document.getElementById('destination').value.toUpperCase(),
+                outbound_date: document.getElementById('outboundDate').value,
+                return_date: document.getElementById('returnDate').value || null,
+                outbound_time: formatTime(document.getElementById('outboundTime').value),
+                return_time: formatTime(document.getElementById('returnTime').value),
+                original_price: parseFloat(document.getElementById('originalPrice').value) || null
+            };
+
+            try {
+                isLoading = true;
+                const response = await fetch(`${API_BASE_URL}/api/flights`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(flightData)
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('Flight added successfully!', 'success');
+                    document.getElementById('addFlightForm').reset();
+                    loadFlights();
+                } else {
+                    showAlert(`Error adding flight: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error adding flight:', error);
+                showAlert('Failed to add flight. Please try again.', 'error');
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        async function checkFlightPrice(flightId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/flights/${flightId}/check`, {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(`Current price: $${data.current_price} (${data.price_change_percent > 0 ? '+' : ''}${data.price_change_percent.toFixed(1)}%)`, 'success');
+                    loadFlights(); // Refresh to show updated price
+                } else {
+                    showAlert(`Error checking price: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error checking price:', error);
+                showAlert('Failed to check price. Please try again.', 'error');
+            }
+        }
+
+        async function deleteFlight(flightId) {
+            if (!confirm('Are you sure you want to delete this flight?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/flights/${flightId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('Flight deleted successfully!', 'success');
+                    loadFlights();
+                } else {
+                    showAlert(`Error deleting flight: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting flight:', error);
+                showAlert('Failed to delete flight. Please try again.', 'error');
+            }
+        }
+
+        function renderFlights() {
+            const flightsList = document.getElementById('flightsList');
+            
+            if (flights.length === 0) {
+                flightsList.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No flights yet</h3>
+                        <p>Add your first flight to start monitoring prices</p>
+                    </div>
+                `;
+                return;
+            }
+
+            flightsList.innerHTML = flights.map(flight => `
+                <div class="flight-card">
+                    <div class="flight-header">
+                        <div>
+                            <div class="flight-route">${flight.origin} → ${flight.destination}</div>
+                            <div class="flight-dates">
+                                ${formatDate(flight.outbound_date)}${flight.outbound_time ? ` at ${flight.outbound_time}` : ''}
+                                ${flight.return_date ? ` - ${formatDate(flight.return_date)}${flight.return_time ? ` at ${flight.return_time}` : ''}` : ''}
+                            </div>
+                            ${flight.flight_numbers && flight.flight_numbers.length > 0 ? `
+                                <div class="flight-numbers">
+                                    ${flight.flight_numbers.map(num => `<span class="flight-number">${num}</span>`).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="price-section">
+                            ${flight.original_price ? `
+                                <div class="price-row">
+                                    <span class="price-label">Original Purchase:</span>
+                                    <span class="price-original">$${flight.original_price.toFixed(2)}</span>
+                                </div>
+                            ` : ''}
+                            <div class="price-row">
+                                <span class="price-label">Current Price:</span>
+                                <span class="price-current">$${flight.current_price.toFixed(2)}</span>
+                                ${flight.original_price && flight.current_price < flight.original_price ? 
+                                    `<span class="price-savings">Save $${(flight.original_price - flight.current_price).toFixed(2)}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${generatePriceStatusMessage(flight)}
+                    
+                    <div class="flight-actions">
+                        <button class="btn btn-small" onclick="checkFlightPrice('${flight.id}')">Check Price</button>
+                        <button class="btn btn-secondary btn-small" onclick="deleteFlight('${flight.id}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function generatePriceStatusMessage(flight) {
+            if (!flight.original_price) {
+                return '<div class="price-status">💡 Set your original purchase price to track savings and get price analysis!</div>';
+            }
+
+            const originalPrice = flight.original_price;
+            const currentPrice = flight.current_price;
+            const priceDiff = originalPrice - currentPrice;
+            const percentChange = ((currentPrice - originalPrice) / originalPrice) * 100;
+
+            let statusClass = 'neutral';
+            let emoji = '📊';
+            let message = '';
+
+            if (priceDiff > 50) {
+                // Major savings - you got a terrible deal originally
+                statusClass = 'bad-deal';
+                emoji = '😅';
+                message = `Ouch! The current price is $${Math.abs(priceDiff).toFixed(2)} lower than what you paid. Consider rebooking if possible!`;
+            } else if (priceDiff > 20) {
+                // Moderate savings available
+                statusClass = 'bad-deal';
+                emoji = '😬';
+                message = `Current price is $${Math.abs(priceDiff).toFixed(2)} lower. You might want to check if rebooking is worth it.`;
+            } else if (priceDiff > 0) {
+                // Small savings available
+                statusClass = 'neutral';
+                emoji = '📈';
+                message = `Price dropped by $${priceDiff.toFixed(2)} since purchase. Minor difference - you did okay!`;
+            } else if (priceDiff === 0) {
+                // Exact same price
+                statusClass = 'good-deal';
+                emoji = '🎯';
+                message = `Perfect timing! Current price matches exactly what you paid. Well done!`;
+            } else if (priceDiff >= -20) {
+                // Small price increase
+                statusClass = 'good-deal';
+                emoji = '✅';
+                message = `Great timing! Price increased by $${Math.abs(priceDiff).toFixed(2)} since your purchase. You saved money!`;
+            } else if (priceDiff >= -50) {
+                // Moderate price increase
+                statusClass = 'good-deal';
+                emoji = '💰';
+                message = `Excellent purchase! Price went up $${Math.abs(priceDiff).toFixed(2)} since you bought. You're saving big!`;
+            } else {
+                // Major price increase
+                statusClass = 'good-deal';
+                emoji = '🚀';
+                message = `Amazing timing! Price skyrocketed $${Math.abs(priceDiff).toFixed(2)} since purchase. You're a flight deal expert!`;
+            }
+
+            return `<div class="price-status ${statusClass}">${emoji} ${message}</div>`;
+        }
+
+        function updateStats() {
+            const totalFlights = flights.length;
+            const activeFlights = flights.filter(f => f.monitoring.enabled).length;
+            const totalSavings = flights.reduce((sum, f) => {
+                return sum + (f.original_price && f.current_price < f.original_price ? 
+                    f.original_price - f.current_price : 0);
+            }, 0);
+            
+            const lastUpdate = flights.reduce((latest, f) => {
+                const lastChecked = f.monitoring.last_checked;
+                return lastChecked && new Date(lastChecked) > new Date(latest) ? lastChecked : latest;
+            }, '');
+
+            document.getElementById('totalFlights').textContent = totalFlights;
+            document.getElementById('totalSavings').textContent = `$${totalSavings.toFixed(2)}`;
+            document.getElementById('activeFlights').textContent = activeFlights;
+            document.getElementById('lastUpdate').textContent = lastUpdate ? 
+                formatDate(lastUpdate.split('T')[0]) : 'Never';
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            });
+        }
+
+        function formatTime(timeString) {
+            if (!timeString) return null;
+            const [hours, minutes] = timeString.split(':');
+            const hour = parseInt(hours);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            const displayHour = hour % 12 || 12;
+            return `${displayHour}:${minutes} ${ampm}`;
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            
+            document.querySelector('.flights-section').prepend(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        function showLoading() {
+            document.getElementById('flightsList').innerHTML = '<div class="loading">Loading flights...</div>';
+        }
+
+        function hideLoading() {
+            // Loading will be replaced by renderFlights()
+        }
+    </script>
+</body>
+</html>
