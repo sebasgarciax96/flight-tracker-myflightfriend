@@ -2,9 +2,6 @@
 # This file configures CodeRabbit to provide comprehensive reviews
 
 reviews:
-  # Enable automatic reviews on all PRs
-  auto_review: true
-  
   # Request detailed security analysis
   request_changes_workflow: true
   
